@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import HTTPError from "../errors/HTTPError";
 import verifyToken from "../tools/verifyToken";
 
 const verifyAdminTokenMiddleware = async (
@@ -6,19 +7,12 @@ const verifyAdminTokenMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  try {
-    const { authorization } = req.headers;
-    const user: any = verifyToken(authorization);
-    if (user.isAdm) {
-      next();
-    } else {
-      throw { code: 403, message: "Unauthorized" };
-    }
-  } catch (err: any) {
-    if (err instanceof Error) {
-      return res.status(403).json({ message: err.message });
-    }
-    return res.status(err.code).json({ message: err.message });
+  const { authorization } = req.headers;
+  const user: any = verifyToken(authorization);
+  if (user.isAdm) {
+    next();
+  } else {
+    throw new HTTPError(403, "Unauthorized");
   }
 };
 
